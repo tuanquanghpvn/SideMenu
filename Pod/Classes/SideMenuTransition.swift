@@ -60,6 +60,8 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
         }
     }
     
+    internal let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.light))
+    
     required public init(sideMenuManager: SideMenuManager) {
         super.init()
         
@@ -254,6 +256,7 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
         let menuView = menuViewController?.view
         let mainView = mainViewController?.view
 
+        blurEffectView.removeFromSuperview()
         tapView?.removeFromSuperview()
         statusBarView?.removeFromSuperview()
         mainView?.motionEffects.removeAll()
@@ -304,6 +307,9 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
         switch sideMenuManager.menuPresentMode {
             
         case .viewSlideOut, .viewSlideInOut:
+            mainView.layer.cornerRadius = 12
+//            mainView.clipsToBounds = true
+            mainView.layer.masksToBounds = false
             mainView.layer.shadowColor = sideMenuManager.menuShadowColor.cgColor
             mainView.layer.shadowRadius = sideMenuManager.menuShadowRadius
             mainView.layer.shadowOpacity = sideMenuManager.menuShadowOpacity
@@ -321,13 +327,23 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
             mainView.frame.origin.x = 0
         }
         
-        if sideMenuManager.menuPresentMode != .viewSlideOut {
+        if sideMenuManager.menuPresentMode == .viewSlideOut {
             mainView.transform = CGAffineTransform(scaleX: sideMenuManager.menuAnimationTransformScaleFactor, y: sideMenuManager.menuAnimationTransformScaleFactor)
             if sideMenuManager.menuAnimationTransformScaleFactor > 1 {
                 tapView?.transform = mainView.transform
             }
             mainView.alpha = 1 - sideMenuManager.menuAnimationFadeStrength
         }
+        
+        // Config Blur
+        blurEffectView.alpha = 0.92
+        blurEffectView.isUserInteractionEnabled = false
+        blurEffectView.frame = mainView.bounds
+        blurEffectView.clipsToBounds = true
+        blurEffectView.layer.masksToBounds = true
+        blurEffectView.layer.cornerRadius = 12
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        mainView.addSubview(blurEffectView)
         
         return self
     }
